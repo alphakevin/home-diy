@@ -166,6 +166,19 @@ function rebuildStove(){
   for(const x of [-.06,.06])cylinder(stove,.016,.02,x,.036,.43,materials.metal);
 }
 function bindInterface(){
+  const workspace=document.querySelector('.workspace'),fullButton=$('fullscreen');
+  function fullState(){return document.fullscreenElement===workspace||workspace.classList.contains('is-full-window');}
+  function updateFullButton(){const active=fullState();fullButton.setAttribute('aria-pressed',String(active));fullButton.setAttribute('aria-label',active?'退出全屏':'进入全屏');fullButton.title=active?'退出全屏':'进入全屏';document.body.classList.toggle('model-fullscreen',active);}
+  fullButton.addEventListener('click',async()=>{
+    try {
+      if(document.fullscreenElement===workspace){await document.exitFullscreen();}
+      else if(workspace.classList.contains('is-full-window')){workspace.classList.remove('is-full-window');}
+      else {try{if(!workspace.requestFullscreen)throw new Error('fullscreen unavailable');await workspace.requestFullscreen();}catch{workspace.classList.add('is-full-window');}}
+    } finally {updateFullButton();}
+  });
+  document.addEventListener('fullscreenchange',updateFullButton);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&workspace.classList.contains('is-full-window')){workspace.classList.remove('is-full-window');updateFullButton();}});
+
   $('door-angle').addEventListener('input',e=>{state.left=state.right=Number(e.target.value);updateUI();});
   $('left-door').addEventListener('click',()=>toggleDoor('left'));
   $('right-door').addEventListener('click',()=>toggleDoor('right'));

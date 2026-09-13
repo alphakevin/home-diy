@@ -19,7 +19,7 @@
     <section class="workspace" aria-label="可交互三维安装模型">
       <div class="viewport-toolbar">
         <div class="segmented" aria-label="观察视角"><button data-view="perspective" aria-pressed="true">斜视</button><button data-view="front" aria-pressed="false">正视</button><button data-view="side" aria-pressed="false">侧视</button><button data-view="product" aria-pressed="false">产品</button></div>
-        <button id="interior" class="button interior-button">查看内部 <span aria-hidden="true">↗</span></button>
+        <div class="view-actions"><button id="interior" class="button interior-button">查看内部 <span aria-hidden="true">↗</span></button><button id="fullscreen" class="button fullscreen-button" aria-label="进入全屏" title="进入全屏" aria-pressed="false"><span aria-hidden="true">⛶</span></button></div>
       </div>
       <div id="viewport" tabindex="0" aria-label="拖动旋转，滚轮缩放，右键拖动平移；也可使用上方视角按钮。点击中央柜门可开关。">
         <div id="loading" role="status">正在构建尺寸模型…</div>
