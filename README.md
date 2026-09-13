@@ -1,5 +1,9 @@
 # 烟机安装 · 3D 空间方案
 
+在线预览：https://alphakevin.github.io/home-diy/
+
+推送 `main` 分支的 `dist/` 修改后，GitHub Actions 会自动更新 Pages。
+
 使用 Three.js 0.170.0 的独立静态网页。依赖已包含在 `dist/vendor`，运行时不需要访问 CDN。
 
 ## 本地运行
