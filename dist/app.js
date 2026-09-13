@@ -9,6 +9,7 @@ const state = { ...initial };
 const C = { bottom:.865, ceiling:1.565, opening:.760, depth:.380, board:.018, railBottom:1.057, railTop:1.137 };
 const colors = { measured:'#24766b', product:'#3f6ea6', derived:'#b5632c' };
 let renderer, scene, camera, controls, hood, duct, panel, shelf, stove, leftHinge, rightHinge;
+let cabinetry, room;
 let dimRecords = [], cameraTween = null, dragStart = null;
 const doorMeshes = [];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -40,7 +41,7 @@ function box(parent,w,h,d,x,y,z,material,edges=false){
 function cylinder(parent,r,h,x,y,z,material){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,48),material);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
 function ring(parent,r,t,x,y,z,material){const mesh=new THREE.Mesh(new THREE.TorusGeometry(r,t,8,48),material);mesh.rotation.x=Math.PI/2;mesh.position.set(x,y,z);parent.add(mesh);return mesh;}
 function makeCabinets(){
-  const cabinetry=new THREE.Group();scene.add(cabinetry);
+  cabinetry=new THREE.Group();scene.add(cabinetry);
   for(const sign of [-1,1]){
     const center=sign*.599;
     box(cabinetry,.402,.018,.38,center,C.bottom+.009,.19,materials.inside,true);
@@ -52,7 +53,7 @@ function makeCabinets(){
   }
   // Central top panel with a schematic duct opening (not a drilling template).
   const outline=new THREE.Shape();outline.moveTo(-.38,0);outline.lineTo(.38,0);outline.lineTo(.38,.38);outline.lineTo(-.38,.38);outline.closePath();
-  const hole=new THREE.Path();hole.absarc(0,.145,.12,0,Math.PI*2,true);outline.holes.push(hole);
+  const hole=new THREE.Path();hole.absarc(0,.142,.12,0,Math.PI*2,true);outline.holes.push(hole);
   const roof=new THREE.Mesh(new THREE.ExtrudeGeometry(outline,{depth:.018,bevelEnabled:false,curveSegments:48}),materials.inside);
   roof.rotation.x=Math.PI/2;roof.position.y=1.583;roof.castShadow=true;roof.receiveShadow=true;cabinetry.add(roof);
   box(cabinetry,.76,.08,.018,0,1.097,.371,materials.inside,true);
@@ -74,35 +75,73 @@ function makeCabinets(){
     if(sign<0)leftHinge=hinge;else rightHinge=hinge;
   }
 }
+// Rounded plan outline preserves the nominal width, depth and height.
+function roundedPrism(parent,w,h,d,x,y,z,r,material){
+  const shape=new THREE.Shape(),a=-w/2,b=w/2,c=-d/2,e=d/2;
+  shape.moveTo(a+r,c);shape.lineTo(b-r,c);shape.quadraticCurveTo(b,c,b,c+r);
+  shape.lineTo(b,e-r);shape.quadraticCurveTo(b,e,b-r,e);
+  shape.lineTo(a+r,e);shape.quadraticCurveTo(a,e,a,e-r);
+  shape.lineTo(a,c+r);shape.quadraticCurveTo(a,c,a+r,c);
+  const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:false,curveSegments:12}),material);
+  mesh.rotation.x=Math.PI/2;mesh.position.set(x,y+h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+}
+function controlTexture(){
+  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=128;
+  const ctx=canvas.getContext('2d');ctx.strokeStyle='#b9c6cf';ctx.fillStyle='#b9c6cf';ctx.lineWidth=5;ctx.lineCap='round';
+  for(let i=0;i<6;i++){
+    const x=100+i*162,y=64;ctx.beginPath();
+    if(i===0){ctx.arc(x,y,20,-Math.PI*.32,Math.PI*1.32);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y-29);ctx.lineTo(x,y-3);}
+    else if(i===1){ctx.arc(x,y,13,0,Math.PI*2);ctx.stroke();for(let j=0;j<8;j++){let t=j*Math.PI/4;ctx.moveTo(x+20*Math.cos(t),y+20*Math.sin(t));ctx.lineTo(x+28*Math.cos(t),y+28*Math.sin(t));}}
+    else if(i===5){ctx.arc(x,y,23,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y-14);ctx.lineTo(x,y);ctx.lineTo(x+11,y+7);}
+    else {for(let j=0;j<3;j++){let t=j*Math.PI*2/3;ctx.moveTo(x,y);ctx.quadraticCurveTo(x+36*Math.cos(t),y+36*Math.sin(t),x+18*Math.cos(t+.9),y+18*Math.sin(t+.9));}}
+    ctx.stroke();
+  }
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
+}
 function makeHood(){
   hood=new THREE.Group();scene.add(hood);
-  box(hood,.365,.496,.325,0,.248,.1625,materials.hoodCase,true);
-  box(hood,.896,.06,.47,0,-.03,.235,materials.hoodRim,true);
-  // Wedge housing: the rear low point is 192 mm below the upper edge.
-  const section=new THREE.Shape();section.moveTo(0,-.06);section.lineTo(.47,-.06);section.lineTo(.16,-.192);section.lineTo(0,-.192);section.closePath();
-  const wedge=new THREE.Mesh(new THREE.ExtrudeGeometry(section,{depth:.896,bevelEnabled:false}),materials.hoodBody);
-  wedge.rotation.y=-Math.PI/2;wedge.position.x=.448;wedge.castShadow=true;wedge.receiveShadow=true;hood.add(wedge);
-  const filter=new THREE.Mesh(new THREE.PlaneGeometry(.738,.326),materials.hoodFilter);
-  filter.rotation.x=Math.atan2(.31,.132);filter.position.set(0,-.125,.317);hood.add(filter);
-  for(let i=0;i<40;i++)box(hood,.008,.013,.004,(i-19.5)*.017,-.047,.472,materials.glass);
-  box(hood,.235,.026,.002,0,-.024,.472,materials.hoodGlass);
-  for(let i=0;i<5;i++)box(hood,.007,.002,.001,(i-2)*.034,-.024,.474,materials.metal);
-  box(hood,.18,.004,.015,0,-.064,.432,materials.light);
-  box(hood,.69,.014,.035,0,-.185,.045,materials.glass);
-  // Wall bracket only represents the attachment principle; hole positions are not specified.
+  roundedPrism(hood,.365,.496,.325,0,.248,.1625,.014,materials.hoodCase);
+  roundedPrism(hood,.896,.060,.470,0,-.030,.235,.013,materials.hoodRim);
+  // The side section drops continuously from 60 mm at the front to 192 mm at the wall.
+  // Only the side cheeks and back are solid; the capture cavity is genuinely recessed.
+  const section=new THREE.Shape();section.moveTo(0,-.060);section.lineTo(.470,-.060);section.lineTo(0,-.192);section.closePath();
+  for(const x of [-.432,.448]){
+    const cheek=new THREE.Mesh(new THREE.ExtrudeGeometry(section,{depth:.016,bevelEnabled:false}),materials.hoodBody);
+    cheek.rotation.y=-Math.PI/2;cheek.position.x=x;cheek.castShadow=true;cheek.receiveShadow=true;hood.add(cheek);
+  }
+  box(hood,.864,.114,.012,0,-.117,.006,materials.hoodBody);
+  // Dark upper cavity, inset from the rounded fascia. Side gaps remain visible.
+  box(hood,.860,.003,.438,0,-.0615,.224,materials.hoodGlass);
+  const slope=Math.atan2(.081,.350),length=Math.hypot(.081,.350);
+  const baffle=new THREE.Group();baffle.position.set(0,-.1045,.260);baffle.rotation.x=-slope;hood.add(baffle);
+  roundedPrism(baffle,.704,.008,length,0,0,0,.008,materials.hoodFilter);
+  // Slim rear oil trough, with a raised front lip and a central removal tab.
+  roundedPrism(hood,.840,.018,.052,0,-.183,.032,.005,materials.hoodBody);
+  box(hood,.832,.004,.003,0,-.175,.0595,materials.metal);
+  box(hood,.042,.004,.005,0,-.182,.063,materials.hoodRim);
+  // Smooth fascia, centrally recessed touch strip (the former external grille is removed).
+  box(hood,.232,.029,.002,0,-.029,.470,materials.hoodGlass);
+  const icons=new THREE.Mesh(new THREE.PlaneGeometry(.222,.027),new THREE.MeshBasicMaterial({map:controlTexture(),transparent:true,depthWrite:false}));
+  icons.position.set(0,-.029,.4712);hood.add(icons);
+  box(hood,.390,.003,.013,0,-.064,.447,materials.light);
+  // Small central brand position, interpreted from the photo rather than a machining detail.
+  const badgeCanvas=document.createElement('canvas');badgeCanvas.width=256;badgeCanvas.height=96;
+  const badge=badgeCanvas.getContext('2d');badge.fillStyle='#35434c';badge.font='500 48px sans-serif';badge.textAlign='center';badge.fillText('MIJIA',128,63);
+  const badgeTexture=new THREE.CanvasTexture(badgeCanvas);badgeTexture.colorSpace=THREE.SRGBColorSpace;
+  const badgeMesh=new THREE.Mesh(new THREE.PlaneGeometry(.034,.013),new THREE.MeshBasicMaterial({map:badgeTexture,transparent:true,depthWrite:false}));badgeMesh.position.set(0,.303,.3252);hood.add(badgeMesh);
   box(hood,.30,.028,.01,0,.37,.004,materials.metal);
+  cylinder(hood,.109,.035,0,.5135,.142,materials.hoodBody);
 }
 function rebuildDuct(){
   if(duct){scene.remove(duct);duct.traverse(o=>o.geometry?.dispose());}
   duct=new THREE.Group();scene.add(duct);
   const start=topY()+.496;
-  cylinder(duct,.109,.035,0,start+.0175,.145,materials.black);
   const height=1.70-start-.035;
-  cylinder(duct,.105,height,0,start+.035+height/2,.145,materials.metal);
-  for(let y=start+.04;y<1.70;y+=.011)ring(duct,.108,.002,0,y,.145,materials.metal);
+  cylinder(duct,.105,height,0,start+.035+height/2,.142,materials.metal);
+  for(let y=start+.04;y<1.70;y+=.011)ring(duct,.108,.002,0,y,.142,materials.metal);
 }
 function makeRoom(){
-  const room=new THREE.Group();scene.add(room);
+  room=new THREE.Group();scene.add(room);
   box(room,1.95,1.87,.022,0,.86,-.025,materials.wall);
   for(let y=.32;y<1.75;y+=.32)box(room,1.95,.0012,.001,0,y,-.013,materials.tile);
   for(const x of [-.64,0,.64])box(room,.0012,1.86,.001,x,.86,-.013,materials.tile);
@@ -165,10 +204,9 @@ function updateUI(){
   $('distance-value').textContent=distance;
   $('distance-label').textContent=state.reference==='top'?'上沿距灶具基准':'最低沿距灶具基准';
   $('distance-formula').textContent=`865 − ${state.stove} − ${state.gap}${state.reference==='bottom'?' − 192':''} = ${distance}`;
-  const valid=distance>=720&&distance<=800;
-  $('range-note').textContent=valid?'落在图示 720–800 mm 内 · 基准待确认':'超出图示 720–800 mm · 请核对基准及高度';
-  document.querySelector('.distance-result').classList.toggle('invalid',!valid);
-  const rows=state.dims==='cabinet' ? [
+  $('range-note').textContent='图示 720–800 mm 仅适用于电灶；本方案燃气灶高度需按燃气灶说明书确认。';
+  document.querySelector('.distance-result').classList.remove('invalid');
+  const rows=state.view==='product' ? [['机身 宽 × 深','896 × 470','product'],['总高（不含出风口）','688','product'],['机箱 宽 × 深','365 × 325','product'],['机箱高','496','product'],['前沿 / 后部高','60 / 192','product'],['出风中心距墙','142','product'],['烟管直径','220','product']] : state.dims==='cabinet' ? [
     ['柜间净宽','760','measured'],['柜体深度 / 高度','380 / 700','measured'],['上部机箱 宽 × 深','365 × 325','product'],['上部机箱高度','496','product'],['机箱顶部余量',String(204+state.gap),'derived'],['收口空档 / 横条','192 / 80','measured']
   ] : [['烟机宽度','896','product'],['烟机深度','470','product'],['柜底距台面','865','measured'],['两侧覆盖（各）','68','derived'],['烟机上沿距台面',String(865-state.gap),'derived'],['柜底间隙',String(state.gap),'derived']];
   $('dimension-list').replaceChildren();
@@ -179,15 +217,20 @@ function syncModel(move=false){
   if(!scene)return;
   hood.position.y=topY();panel.visible=state.panel;shelf.visible=state.shelf;
   if(move)rebuildDuct();
+  duct.visible=state.view!=='product';stove.visible=state.view!=='product';
   rebuildDimensions();
 }
 function setView(name){
   state.view=name;updateUI();
   if(!camera)return;
-  const target=new THREE.Vector3(0,.80,.18);
-  const positions={perspective:new THREE.Vector3(2.9,2.12,4.8),front:new THREE.Vector3(0,.80,6),side:new THREE.Vector3(6,.80,.18)};
+  const product=name==='product';
+  cabinetry.visible=!product;room.visible=!product;stove.visible=!product;duct.visible=!product;
+  camera.zoom=product?1.65:1;camera.updateProjectionMatrix();
+  const target=new THREE.Vector3(0,product?topY()+.14:.80,.18);
+  const positions={product:new THREE.Vector3(1.6,.30,3.8),perspective:new THREE.Vector3(2.9,2.12,4.8),front:new THREE.Vector3(0,.80,6),side:new THREE.Vector3(6,.80,.18)};
+  rebuildDimensions();
   cameraTween={from:camera.position.clone(),to:positions[name],fromTarget:controls.target.clone(),toTarget:target,start:performance.now()};
-  if(reducedMotion){camera.position.copy(cameraTween.to);controls.target.copy(target);cameraTween=null;controls.update();}
+  if(product||reducedMotion){camera.position.copy(cameraTween.to);controls.target.copy(target);cameraTween=null;controls.update();}
 }
 function init(){
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
@@ -240,7 +283,13 @@ function addDimension(name,value,start,end,offset,type){
 }
 function rebuildDimensions(){
   $('dimensions').replaceChildren();dimRecords=[];const y=topY();
-  if(state.dims==='installation'){
+  if(state.view==='product'&&state.dims!=='none'){
+    addDimension('机宽','896',[-.448,y,0],[.448,y,0],[0,-.255,.49],'product');
+    addDimension('前沿','60',[.448,y,.47],[.448,y-.06,.47],[.07,0,.04],'product');
+    addDimension('后部','192',[-.448,y,0],[-.448,y-.192,0],[-.08,0,.03],'product');
+    addDimension('机箱高','496',[.1825,y,.325],[.1825,y+.496,.325],[.06,0,.03],'product');
+    addDimension('出风中心距墙','142',[0,y+.51,0],[0,y+.51,.142],[0,.055,0],'product');
+  }else if(state.dims==='installation'){
     addDimension('净宽','760',[-.38,1.565,.38],[.38,1.565,.38],[0,.065,.08],'measured');
     addDimension('机宽','896',[-.448,y-.192,.16],[.448,y-.192,.16],[0,-.075,.31],'product');
     addDimension('机深','470',[.448,y,0],[.448,y,.47],[.14,.045,0],'product');
@@ -252,7 +301,7 @@ function rebuildDimensions(){
     addDimension('机箱高','496',[.1825,y,.325],[.1825,y+.496,.325],[.095,0,.07],'product');
     addDimension('柜高','700',[-.38,C.bottom,0],[-.38,C.ceiling,0],[-.19,0,.18],'measured');
     addDimension('柜深','380',[.38,1.565,0],[.38,1.565,.38],[.19,.075,0],'measured');
-    addDimension('顶部余量',String(204+state.gap),[0,y+.496,.145],[0,C.ceiling,.145],[-.27,0,0],'derived');
+    addDimension('顶部余量',String(204+state.gap),[0,y+.496,.142],[0,C.ceiling,.142],[-.27,0,0],'derived');
     addDimension('收口空档','192',[-.38,.865,.38],[-.38,1.057,.38],[-.02,0,.09],'measured');
   }
 }

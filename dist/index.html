@@ -18,7 +18,7 @@
   <main>
     <section class="workspace" aria-label="可交互三维安装模型">
       <div class="viewport-toolbar">
-        <div class="segmented" aria-label="观察视角"><button data-view="perspective" aria-pressed="true">斜视</button><button data-view="front" aria-pressed="false">正视</button><button data-view="side" aria-pressed="false">侧视</button></div>
+        <div class="segmented" aria-label="观察视角"><button data-view="perspective" aria-pressed="true">斜视</button><button data-view="front" aria-pressed="false">正视</button><button data-view="side" aria-pressed="false">侧视</button><button data-view="product" aria-pressed="false">产品</button></div>
         <button id="interior" class="button interior-button">查看内部 <span aria-hidden="true">↗</span></button>
       </div>
       <div id="viewport" tabindex="0" aria-label="拖动旋转，滚轮缩放，右键拖动平移；也可使用上方视角按钮。点击中央柜门可开关。">
@@ -50,11 +50,11 @@
         <div class="door-control gap-label"><label for="gap">烟机与柜底间隙</label><output id="gap-value" for="gap">8 mm</output></div>
         <input id="gap" type="range" min="0" max="60" value="8" step="1">
         <label class="reference-label" for="device-reference">设备端测量基准</label>
-        <select id="device-reference"><option value="top">烟机上沿（暂按当前方案）</option><option value="bottom">烟机最低沿（用于核对）</option></select>
-        <div class="distance-result" aria-live="polite"><div><span id="distance-label">距灶具基准</span><strong><span id="distance-value">757</span><small>mm</small></strong></div><p id="distance-formula">865 − 100 − 8 = 757</p><p id="range-note">图示区间 720–800 mm · 测量基准待确认</p></div>
+        <select id="device-reference"><option value="top">烟机上沿（安装图基准）</option><option value="bottom">烟机最低沿（用于核对）</option></select>
+        <div class="distance-result" aria-live="polite"><div><span id="distance-label">距灶具基准</span><strong><span id="distance-value">757</span><small>mm</small></strong></div><p id="distance-formula">865 − 100 − 8 = 757</p><p id="range-note">720–800 mm 仅适用于电灶；燃气灶按其安装说明确认</p></div>
       </section>
       <details class="model-notes"><summary>收口板制作与喷漆</summary><p>先用纸板试装，再确定成品尺寸。模型中的板为 754 × 186 × 18 mm，对应 760 × 192 空档、每边留缝 3 mm；实际板厚和间隙须现场确认。</p><p>下料、修补切边、打磨除尘，施涂适合基材的底漆，再薄喷多遍低光泽黑色家具面漆。光滑旧饰面先除油、打磨失光并配附着底漆；裸木使用木器底漆。背面和切口一并封闭。</p><p>先在边角料试色，完全固化后用内侧角码或螺钉安装，保持可拆。重涂和固化时间按涂料说明。拆下板材，在通风、远离火源的位置喷涂；普通喷漆不改变木板的燃烧性能。</p><p><a href="https://www.spraypaint.rustoleum.com/blog/can-you-spray-paint-wood" target="_blank" rel="noopener noreferrer">木材喷漆施工参考 ↗</a></p></details>
-      <details class="model-notes"><summary>模型依据与待复测项</summary><p>烟机使用提亮的分区金属材质和补光，方便查看结构；显示颜色不代表实物颜色。</p><p>柜间净宽 760、深 380、高 700、横条高 80、下方空档 192、柜底距台面 865 mm，依据现场标注。</p><p>烟机外包络 896 × 470 × 688 mm；上部机箱 365 × 325 × 496 mm；下部高 192 mm，依据商品图。机身细节为简化外形。</p><p>灶具基准高度 100、柜底间隙 8、板厚 18 mm 为暂定值。侧柜宽度、灶具外形、烟管走向、顶板开孔及五金位置为示意，不用于下料或打孔。</p><p>尺寸计算默认安装图量到烟机上沿。灶具端及设备端应与随机说明书核对；本模型不判断燃气安全间距、承重或烟管转弯是否合格。</p></details>
+      <details class="model-notes"><summary>模型依据与待复测项</summary><p>烟机使用提亮的分区金属材质和补光，方便查看结构；显示颜色不代表实物颜色。</p><p>柜间净宽 760、深 380、高 700、横条高 80、下方空档 192、柜底距台面 865 mm，依据现场标注。</p><p>烟机外包络 896 × 470 × 688 mm；上部机箱 365 × 325 × 496 mm；下部高 192 mm，依据商品图。补充圆角机箱、触控条、内凹吸烟腔、斜面导烟板及后部油杯；小圆角、图标和内腔细节按照片近似。烟管中心距墙 142 mm。</p><p>灶具基准高度 100、柜底间隙 8、板厚 18 mm 为暂定值。侧柜宽度、灶具外形、烟管走向、顶板开孔及五金位置为示意，不用于下料或打孔。</p><p>新安装图的设备端量至烟机上沿，但 720–800 mm 明确仅适用于电灶。图中灶具示意不是把锅架高度固定为 100 mm 的依据；本方案 100 mm 仍为待复测参数。燃气灶安装高度应按燃气灶说明书确定；本模型不判断燃气安全间距、承重或烟管转弯是否合格。</p></details>
     </aside>
   </main>
   <script type="module" src="./app.js"></script>
