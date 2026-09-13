@@ -1,8 +1,10 @@
-# 烟机安装 · 3D 空间方案
+# Range Hood Installation · 3D Space Planning
 
-在线预览：https://alphakevin.github.io/home-diy/
+English version: this file. 中文说明：[README.zh-CN.md](README.zh-CN.md)
 
-GitHub Pages 从 `gh-pages` 分支根目录发布。更新 `main` 的 `dist/` 后，可用以下命令同步网页：
+Live preview: https://alphakevin.github.io/home-diy/
+
+GitHub Pages publishes from the root of the `gh-pages` branch. After updating `dist/` on `main`, sync the site with:
 
 ```sh
 git subtree split --prefix=dist -b pages-release
@@ -10,48 +12,48 @@ git push origin pages-release:gh-pages
 git branch -D pages-release
 ```
 
-首次配置时 GitHub Actions 启动返回服务器错误，因此使用分支发布。
+On first setup, GitHub Actions may return a server error when starting the app, so branch-based publishing is used.
 
-使用 Three.js 0.170.0 的独立静态网页。依赖已包含在 `dist/vendor`，运行时不需要访问 CDN。
+This is a standalone static webpage built with Three.js 0.170.0. Dependencies are included under `dist/vendor`, so no CDN access is required at runtime.
 
-## 本地运行
+## Local Run
 
-安装 Node.js 后，在此目录运行 `npm start`，打开 http://127.0.0.1:4173 。也可使用任意静态 HTTP 服务器托管 `dist`；不要直接双击 HTML（浏览器会限制 ES 模块）。
+After installing Node.js, run `npm start` in this directory and open http://127.0.0.1:4173 . You can also host `dist` with any static HTTP server; do not open the HTML directly by double-clicking it (browsers restrict ES modules in this case).
 
-## 交互
+## Interaction
 
-- 拖动旋转、滚轮缩放、右键拖动平移；斜视、正视、侧视快捷视角。
-- 点击中央柜门或使用控制面板开关，角度 0–110°。
-- 隐藏可拆收口板查看机箱；显示原活动底板检查干涉。
-- 安装 / 柜内尺寸标注；可调整灶具基准高度及柜底间隙。
-- 可以切换烟机上沿 / 最低沿测量基准以核对安装图。初始值依照当前讨论，不能替代厂家确认。
+- Drag to rotate, scroll to zoom, and right-drag to pan; quick views for isometric, front, and side elevations.
+- Click the center cabinet door or use the control panel to switch angles from 0–110°.
+- Hide the removable ducting plate to view the machine housing; show the original movable bottom panel to inspect interference.
+- Installation and cabinet dimensions are labeled; the cooking appliance reference height and cabinet-to-floor gap can be adjusted.
+- You can switch the measurement baseline between the hood upper edge and the lowest edge to verify the installation drawing. The initial values follow the current discussion and are not a substitute for manufacturer confirmation.
 
-## 尺寸与建模边界
+## Dimensions and Modeling Boundaries
 
-全部计算使用 mm，Three.js 场景 1 单位 = 1 m。台面上表面为 y=0，墙面为 z=0，中心线为 x=0。
+All calculations use mm, and the Three.js scene uses 1 unit = 1 m. The countertop top surface is y=0, the wall is z=0, and the centerline is x=0.
 
-已知柜体：净宽 760、深 380、高 700、柜底距台面 865、横条高 80、横条下方空档 192。
+Known cabinet: net width 760, depth 380, height 700, cabinet bottom to countertop 865, horizontal bar height 80, clearance below bar 192.
 
-商品图：烟机宽 896、深 470、总高 688（不含出风口）；上部宽 365、深 325、高 496；下部高 192；排烟管标注 220。
+Product drawing: range hood width 896, depth 470, total height 688 (excluding the outlet); upper section width 365, depth 325, height 496; lower section height 192; range hood duct label 220.
 
-初始暂定：灶具测量基准高出台面 100，烟机上沿低于柜底 8。于是上沿距台面 857，距灶具基准 757，机箱顶部余量 212。
+Initial tentative setup: cooking appliance reference height above counter 100, hood upper edge 8 below cabinet bottom. This places the upper edge 857 above the countertop, 757 above the cooking reference, and 212 mm clearance above the cabinet top.
 
-原活动底板默认移除；收口板示意成品 754 × 186 × 18（对应 760 × 192 空档，每边留缝 3 mm）。最终下料需复测。
+The original movable bottom panel is removed by default; the trim panel is shown as a concept finish size of 754 × 186 × 18 (corresponding to the 760 × 192 opening, leaving 3 mm gaps on each side). Final cutting must be re-measured.
 
-板厚、侧柜宽度、灶具形状、烟管走向、顶板开孔、五金及挂架均为示意；几何不用于加工或安装孔位定位。不自动判定承重、防火间距、柜门实际五金行程、烟管转弯可行性。灶具与设备两端测量基准必须以随机说明书确认。
+Panel thickness, side cabinet width, appliance shape, duct path, top panel cutouts, hardware, and bracket are illustrative only; geometry is not used for fabrication or mounting hole positioning. It does not automatically determine load-bearing capacity, fire clearance, actual cabinet door hardware travel, or duct bend feasibility. The measurement reference for both ends of the cooking appliance and equipment must be confirmed against the random installation manual.
 
-## 项目文件
+## Project Files
 
-- `dist/index.html`：界面
-- `dist/styles.css`：响应式布局
-- `dist/app.js`：参数化模型、尺寸标注与交互
-- `dist/vendor/`：Three.js 与官方 OrbitControls
-- `serve.mjs`：无第三方依赖的本地服务器
+- `dist/index.html`: interface
+- `dist/styles.css`: responsive layout
+- `dist/app.js`: parameterized model, dimension annotations, and interaction
+- `dist/vendor/`: Three.js and official OrbitControls
+- `serve.mjs`: local server with no third-party dependencies
 
-Three.js 官方文档：https://threejs.org/docs/ 。第三方代码使用 MIT 许可证，见 `dist/vendor/LICENSE.three`。
+Three.js official docs: https://threejs.org/docs/ . Third-party code uses the MIT license, see `dist/vendor/LICENSE.three`.
 
-## 产品细节修订
+## Product Detail Revisions
 
-根据补充照片和侧视安装图加入圆角机箱、触控条、内凹吸烟腔、悬置斜面导烟板及后部油杯；修正侧壁为从前沿 60 mm 到后部 192 mm 的连续斜边，出风中心距墙为 142 mm。增加“产品”独立观察视角。内部构件、小圆角、图标和徽标为照片近似，不是制造图。
+Based on supplementary photos and side-view installation drawings, a rounded cabinet body, touch strip, recessed smoke cavity, sloped smoke-guiding plate, and rear oil cup were added; the side wall was corrected to a continuous diagonal from 60 mm from the front edge to 192 mm at the rear, and the outlet center distance from the wall is 142 mm. An independent "Product" observation view was added. Internal components, small radii, icons, and logos are approximations based on photos, not manufacturing drawings.
 
-补充安装图明确：720–800 mm 仅适用于电灶；燃气灶应按燃气灶说明书确定高度。界面只计算距离，不再据该区间判定当前燃气灶方案。
+The supplementary installation drawing clarifies that 720–800 mm is only suitable for electric cooktops; gas cooktops should use the height specified in the gas cooktop manual. The interface only calculates distances and no longer determines the current gas-cooktop scheme based on that range.
