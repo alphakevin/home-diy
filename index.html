@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#eef1f4">
+  <meta name="description" content="烟机贴柜安装方案的交互式三维尺寸模型，可打开柜门、查看内部和调整安装参数。">
+  <title>烟机安装 · 3D 空间方案</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="identity"><span class="brand-mark" aria-hidden="true">⌑</span><div><h1>烟机安装<span> / 3D 空间方案</span></h1><p>米家欧式 3 · 贴柜安装 + 可拆收口板</p></div></div>
+    <button id="reset" class="button quiet">重置方案</button>
+  </header>
+  <main>
+    <section class="workspace" aria-label="可交互三维安装模型">
+      <div class="viewport-toolbar">
+        <div class="segmented" aria-label="观察视角"><button data-view="perspective" aria-pressed="true">斜视</button><button data-view="front" aria-pressed="false">正视</button><button data-view="side" aria-pressed="false">侧视</button></div>
+        <button id="interior" class="button interior-button">查看内部 <span aria-hidden="true">↗</span></button>
+      </div>
+      <div id="viewport" tabindex="0" aria-label="拖动旋转，滚轮缩放，右键拖动平移；也可使用上方视角按钮。点击中央柜门可开关。">
+        <div id="loading" role="status">正在构建尺寸模型…</div>
+        <svg id="dimensions" aria-hidden="true"></svg>
+        <div id="render-error" role="alert" hidden>此浏览器未能启用 3D 图形。请启用硬件加速后刷新，或使用 Chrome / Safari 打开。尺寸信息仍可在右侧查看。</div>
+      </div>
+      <div class="viewport-footer"><span class="mouse-hint">拖动旋转 · 滚轮缩放 · 点击柜门开关</span><span class="model-scale">单位 mm <span>·</span> 按尺寸比例建模</span></div>
+    </section>
+    <aside class="sidebar" aria-label="模型控制与尺寸">
+      <section class="panel-section first-section">
+        <div class="section-heading"><span class="eyebrow">01 / 结构</span><span class="subtle">原柜体保留</span></div>
+        <div class="door-control"><label for="door-angle">柜门开合</label><output id="door-value" for="door-angle">0°</output></div>
+        <input type="range" id="door-angle" min="0" max="110" value="0" step="1" aria-label="中央柜门开启角度">
+        <div class="door-buttons"><button id="left-door" class="button small" aria-pressed="false">打开左门</button><button id="right-door" class="button small" aria-pressed="false">打开右门</button></div>
+        <label class="switch-row"><span><strong>哑黑收口板</strong><small>遮挡中间 192 mm 空档</small></span><input type="checkbox" id="show-panel" checked role="switch"></label>
+        <label class="switch-row"><span><strong>原活动底板</strong><small>方案中已取出，可显示检查干涉</small></span><input type="checkbox" id="show-shelf" role="switch"></label>
+        <p id="shelf-warning" class="inline-warning" hidden>原底板与机箱相交，安装前需取出。</p>
+      </section>
+      <section class="panel-section">
+        <div class="section-heading"><span class="eyebrow">02 / 尺寸</span><span class="subtle">随模型联动</span></div>
+        <div class="segmented dimension-tabs" aria-label="尺寸标注分类"><button data-dims="installation" aria-pressed="true">安装</button><button data-dims="cabinet" aria-pressed="false">柜内</button><button data-dims="none" aria-pressed="false">隐藏</button></div>
+        <dl id="dimension-list" class="dimension-list"></dl>
+        <div class="legend"><span><i class="measured"></i>实测</span><span><i class="product"></i>商品图</span><span><i class="derived"></i>计算 / 暂定</span></div>
+      </section>
+      <section class="panel-section">
+        <div class="section-heading"><span class="eyebrow">03 / 安装微调</span></div>
+        <div class="number-row"><label for="stove-height">灶具基准高出台面</label><div class="number-field"><input id="stove-height" type="number" min="0" max="200" step="1" value="100"><span>mm</span></div></div>
+        <div class="door-control gap-label"><label for="gap">烟机与柜底间隙</label><output id="gap-value" for="gap">8 mm</output></div>
+        <input id="gap" type="range" min="0" max="60" value="8" step="1">
+        <label class="reference-label" for="device-reference">设备端测量基准</label>
+        <select id="device-reference"><option value="top">烟机上沿（暂按当前方案）</option><option value="bottom">烟机最低沿（用于核对）</option></select>
+        <div class="distance-result" aria-live="polite"><div><span id="distance-label">距灶具基准</span><strong><span id="distance-value">757</span><small>mm</small></strong></div><p id="distance-formula">865 − 100 − 8 = 757</p><p id="range-note">图示区间 720–800 mm · 测量基准待确认</p></div>
+      </section>
+      <details class="model-notes"><summary>收口板制作与喷漆</summary><p>先用纸板试装，再确定成品尺寸。模型中的板为 754 × 186 × 18 mm，对应 760 × 192 空档、每边留缝 3 mm；实际板厚和间隙须现场确认。</p><p>下料、修补切边、打磨除尘，施涂适合基材的底漆，再薄喷多遍低光泽黑色家具面漆。光滑旧饰面先除油、打磨失光并配附着底漆；裸木使用木器底漆。背面和切口一并封闭。</p><p>先在边角料试色，完全固化后用内侧角码或螺钉安装，保持可拆。重涂和固化时间按涂料说明。拆下板材，在通风、远离火源的位置喷涂；普通喷漆不改变木板的燃烧性能。</p><p><a href="https://www.spraypaint.rustoleum.com/blog/can-you-spray-paint-wood" target="_blank" rel="noopener noreferrer">木材喷漆施工参考 ↗</a></p></details>
+      <details class="model-notes"><summary>模型依据与待复测项</summary><p>烟机使用提亮的分区金属材质和补光，方便查看结构；显示颜色不代表实物颜色。</p><p>柜间净宽 760、深 380、高 700、横条高 80、下方空档 192、柜底距台面 865 mm，依据现场标注。</p><p>烟机外包络 896 × 470 × 688 mm；上部机箱 365 × 325 × 496 mm；下部高 192 mm，依据商品图。机身细节为简化外形。</p><p>灶具基准高度 100、柜底间隙 8、板厚 18 mm 为暂定值。侧柜宽度、灶具外形、烟管走向、顶板开孔及五金位置为示意，不用于下料或打孔。</p><p>尺寸计算默认安装图量到烟机上沿。灶具端及设备端应与随机说明书核对；本模型不判断燃气安全间距、承重或烟管转弯是否合格。</p></details>
+    </aside>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
